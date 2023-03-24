@@ -1,0 +1,372 @@
+#!/bin/bash
+#copyright by hiboy
+source /etc/storage/script/init.sh
+PROG=/tmp/zerotier-one/zerotier-one
+PROGCLI=/tmp/zerotier-one/zerotier-cli
+PROGIDT=/tmp/zerotier-one/zerotier-idtool
+config_path="/etc/storage/zerotier-one"
+PLANET="/etc/storage/zerotier-one/planet"
+zeroid="$(nvram get zerotier_id)"
+zerotier_renum=`nvram get zerotier_renum`
+zerotier_renum=${zerotier_renum:-"0"}
+
+if [ ! -z "$(echo $scriptfilepath | grep -v "/tmp/script/" | grep zerotier)" ]  && [ ! -s /tmp/script/_zerotier ]; then
+	mkdir -p /tmp/script
+	{ echo '#!/bin/bash' ; echo $scriptfilepath '"$@"' '&' ; } > /tmp/script/_zerotier
+	chmod 777 /tmp/script/_zerotier
+fi
+zerotier_restart () {
+
+relock="/var/lock/zerotier_restart.lock"
+if [ "$1" = "o" ] ; then
+	nvram set zerotier_renum="0"
+	[ -f $relock ] && rm -f $relock
+	return 0
+fi
+if [ "$1" = "x" ] ; then
+	if [ -f $relock ] ; then
+		logger -t "【ZeroTier】" "多次尝试启动失败，等待【"`cat $relock`"分钟】后自动尝试重新启动"
+		exit 0
+	fi
+	zerotier_renum=${zerotier_renum:-"0"}
+	zerotier_renum=`expr $zerotier_renum + 1`
+	nvram set zerotier_renum="$zerotier_renum"
+	if [ "$zerotier_renum" -gt "2" ] ; then
+		I=19
+		echo $I > $relock
+		logger -t "【ZeroTier】" "多次尝试启动失败，等待【"`cat $relock`"分钟】后自动尝试重新启动"
+		while [ $I -gt 0 ]; do
+			I=$(($I - 1))
+			echo $I > $relock
+			sleep 60
+			[ "$(nvram get zerotier_renum)" = "0" ] && exit 0
+			[ $I -lt 0 ] && break
+		done
+		nvram set zerotier_renum="0"
+	fi
+	[ -f $relock ] && rm -f $relock
+fi
+nvram set zerotier_status=0
+eval "$scriptfilepath &"
+exit 0
+}
+
+zerotier_get_status () {
+
+A_restart=`nvram get zerotier_status`
+B_restart="1"
+cut_B_re
+if [ "$A_restart" != "$B_restart" ] ; then
+	nvram set zerotier_status=$B_restart
+	needed_restart=1
+else
+	needed_restart=0
+fi
+}
+
+
+zerotier_check () {
+
+zerotier_get_status
+	if [ "$needed_restart" = "1" ] ; then
+		zerotier_start
+	else
+		[ -z "`pidof zerotier-one`" ] && zerotier_restart
+	fi
+}
+
+zerotier_keep  () {
+[ ! -z "\`pidof zerotier-one\`" ] && logger -t "【ZeroTier】" "启动成功"
+if [ -s /tmp/script/_opt_script_check ]; then
+SVC_PATH="/tmp/zerotier-one/zerotier-one"
+logger -t "【ZeroTier】" "守护进程启动"
+sed -Ei '/【ZeroTier】|^$/d' /tmp/script/_opt_script_check
+cat >> "/tmp/script/_opt_script_check" <<-OSC
+	[ -z "\`pidof zerotier-one\`" ] || [ ! -s "$SVC_PATH" ] && nvram set zerotier_status=00 && logger -t "【ZeroTier】" "重新启动" && eval "$scriptfilepath &" && sed -Ei '/【ZeroTier】|^$/d' /tmp/script/_opt_script_check # 【ZeroTier】
+OSC
+#return
+fi
+
+}
+
+zerotier_close () {
+del_rules
+kill_ps "$scriptname keep"
+sed -Ei '/【ZeroTier】|^$/d' /tmp/script/_opt_script_check
+killall zerotier-one
+killall -9 zerotier-one
+kill_ps "/tmp/script/_zerotier"
+kill_ps "_zerotier.sh"
+kill_ps "$scriptname"
+[ -z "`pidof zerotier-one`" ] && logger -t "【ZeroTier】" "进程已关闭"
+}
+
+zerotier_start()  {
+check_webui_yes
+SVC_PATH="/tmp/zerotier-one/zerotier-one"
+SVC_PATH2="/tmp/zerotier.tar.gz"
+[ ! -e "$SVC_PATH2" ] && [ -e "/etc/storage/zerotier-one/zerotier.tar.gz" ] && cp -f /etc/storage/zerotier-one/zerotier.tar.gz /tmp/zerotier.tar.gz
+zerosize=`check_disk_size /etc/storage`
+curltest=`which curl`
+if [ -z "$curltest" ] || [ ! -s "`which curl`" ] ; then
+   tag="$( wget -T 5 -t 3 --user-agent "$user_agent" --max-redirect=0 --output-document=-  https://api.github.com/repos/lmq8267/ZeroTierOne/releases/latest  2>&1 | grep 'tag_name' | cut -d\" -f4 )"
+   [ -z "$tag" ] && tag="$( wget -T 5 -t 3 --user-agent "$user_agent" --quiet --output-document=-  https://api.github.com/repos/lmq8267/ZeroTierOne/releases/latest  2>&1 | grep 'tag_name' | cut -d\" -f4 )"
+    else
+    tag="$( curl --connect-timeout 3 --user-agent "$user_agent"  https://api.github.com/repos/lmq8267/ZeroTierOne/releases/latest  2>&1 | grep 'tag_name' | cut -d\" -f4 )"
+    [ -z "$tag" ] && tag="$( curl -L --connect-timeout 3 --user-agent "$user_agent" -s  https://api.github.com/repos/lmq8267/ZeroTierOne/releases/latest  2>&1 | grep 'tag_name' | cut -d\" -f4 )"
+fi
+if [ ! -s "$SVC_PATH" ] ; then
+   logger -t "【ZeroTier】" "找不到$SVC_PATH,开始获取GitHub上的最新版本"
+   zeroMD5="$(cat /etc/storage/zerotier-one/MD5.txt)"
+   if [ ! -e "$SVC_PATH2" ] || [ ! -s "$SVC_PATH2" ] ; then
+       rm -rf /etc/storage/zerotier-one/MD5.txt
+       if [ ! -z "$tag" ] ; then
+           logger -t "【ZeroTier】" "获取到最新版本zerotier_$tag,开始下载"
+           wgetcurl.sh "/etc/storage/zerotier-one/MD5.txt" "https://github.com/lmq8267/ZeroTierOne/releases/download/$tag/MD5.txt"
+           if [ "$zerosize" -lt 4 ];then
+               logger -t "【ZeroTier】" "您的设备/etc/storage空间剩余"$zerosize"M，不足4M，将下载安装包到内存安装"
+               wgetcurl.sh "/tmp/zerotier.tar.gz" "https://github.com/lmq8267/ZeroTierOne/releases/download/$tag/zerotier.tar.gz"
+               else
+                logger -t "【ZeroTier】" "您的设备/etc/storage空间充足:"$zerosize"M，将下载安装包到内部存储"
+                wgetcurl.sh "/etc/storage/zerotier-one/zerotier.tar.gz" "https://github.com/lmq8267/ZeroTierOne/releases/download/$tag/zerotier.tar.gz"
+           fi
+       else
+              logger -t "【ZeroTier】" "最新版本获取失败，开始下载备用程序zerotier_v1.10.5"
+              logger -t "【ZeroTier】" "若出现反复更新下载，请关闭自动更新"
+	      rm -rf /etc/storage/zerotier-one/MD5.txt
+              wgetcurl.sh "/etc/storage/zerotier-one/MD5.txt" "https://github.com/lmq8267/ZeroTierOne/releases/download/1.10.5/MD5.txt"
+              if [ "$zerosize" -lt 2 ];then
+               logger -t "【ZeroTier】" "您的设备/etc/storage空间剩余"$zerosize"M，不足2M，将下载安装包到内存安装"
+               wgetcurl.sh "/tmp/zerotier.tar.gz" "https://github.com/lmq8267/ZeroTierOne/releases/download/1.10.5/zerotier.tar.gz"
+               else
+                logger -t "【ZeroTier】" "您的设备/etc/storage空间充足:"$zerosize"M，将下载安装包到内部存储"
+                wgetcurl.sh "/etc/storage/zerotier-one/zerotier.tar.gz" "https://github.com/lmq8267/ZeroTierOne/releases/download/1.10.5/zerotier.tar.gz"
+              fi
+        fi
+        [ ! -f "$SVC_PATH2" ] && [ -f "/etc/storage/zerotier-one/zerotier.tar.gz" ] && cp -f /etc/storage/zerotier-one/zerotier.tar.gz "$SVC_PATH2"
+    fi
+     zeroMD5="$(cat /etc/storage/zerotier-one/MD5.txt)"
+     [ ! -f "$SVC_PATH2" ] && [ -f "/etc/storage/zerotier-one/zerotier.tar.gz" ] && cp -f /etc/storage/zerotier-one/zerotier.tar.gz /tmp/zerotier.tar.gz
+     [ -f "$SVC_PATH2" ] && eval $(md5sum "$SVC_PATH2" | awk '{print "MD5_down="$1;}') && echo "$MD5_down"
+     if [ ! -s "$SVC_PATH" ] ; then   
+        if [ "$zeroMD5"x = "$MD5_down"x ] ; then
+            logger -t "【ZeroTier】" "安装包下载完成，MD5匹配，开始解压..."
+            tar -xzvf /tmp/zerotier.tar.gz -C /tmp
+            sleep 5
+            rm -rf /tmp/zerotier.tar.gz
+            else
+            logger -t "【ZeroTier】" "安装包下载完成，MD5不匹配，删除..."
+            rm -rf "$SVC_PATH2"
+            rm -rf /etc/storage/zerotier-one/zerotier.tar.gz
+            rm -rf /tmp/zerotier.tar.gz
+            zero_dl
+        fi
+     fi
+fi
+      chmod 777 /tmp/zerotier-one/*
+      chmod 777 /tmp/zerotier-one/lib/*
+ if [ -f "$SVC_PATH" ] ; then
+       zerotier_v=$($SVC_PATH -version | sed -n '1p')
+       echo "$tag"
+       echo "$zerotier_v"
+       logger -t "【ZeroTier】" " $SVC_PATH 安装成功，版本号:v$zerotier_v "
+       if [ ! -z "$tag" ] ; then
+          if [ "$tag"x != "$zerotier_v"x ] ; then
+             cat /etc/storage/started_script.sh|grep zerotier_upgrade=y >/dev/null
+	      if [ $? -eq 0 ] ; then
+               logger -t "【ZeroTier】" "检测到最新版本zerotier_$tag,当前安装版本zerotier_v$zerotier_v,已开启自动更新，开始更新"
+	       rm -rf /etc/storage/zerotier-one/MD5.txt
+	       rm -rf /etc/storage/zerotier-one/zerotier.tar.gz
+               rm -rf /tmp/zerotier.tar.gz
+	        rm -rf /tmp/zerotier-one
+                zero_dl
+                else
+               logger -t "【ZeroTier】" "检测到最新版本zerotier_$tag,当前安装版本zerotier_v$zerotier_v,未开启自动更新,跳过更新"
+	      fi
+           fi
+       fi
+  fi
+start_instance 'zerotier'
+}
+    
+start_instance() {
+cfg="$(nvram get zerotier_id)"
+echo $cfg
+port=""
+args=""
+secret="$(cat /etc/storage/zerotier-one/identity.secret)"
+moonid="$(nvram get zerotier_moonid)"
+[ ! -e "/etc/storage/zerotier-one/identity.secret" ] && secret="$(nvram get zerotier_secret)"
+if [ ! -d "$config_path" ]; then
+  mkdir -p $config_path
+fi
+mkdir -p $config_path/networks.d
+if [ -n "$port" ]; then
+   args="$args -p$port"
+fi
+if [ -z "$secret" ]; then
+   [ ! -n "$cfg" ] && logger -t "【ZeroTier】" "无法启动，即将退出..." && logger -t "【ZeroTier】" "未获取到zerotier id，请确认在自定义设置-脚本-在路由器启动后执行里已填写好zerotier id" && logger -t "【ZeroTier】" "填好后，在系统管理-控制台输入一次nvram set zerotier_id=你的zerotier id" && logger -t "【ZeroTier】" "然后手动启动，在系统管理-控制台输入一次 /etc/storage/zerotier.sh start" && exit 1
+   logger -t "【ZeroTier】" "设备密钥为空，正在生成密钥，请稍候..."
+   sf="$config_path/identity.secret"
+   pf="$config_path/identity.public"
+   $PROGIDT generate "$sf" "$pf"  >/dev/null
+   [ $? -ne 0 ] && return 1
+   secret="$(cat $sf)"
+   nvram set zerotier_secret="$secret"
+   nvram commit
+fi
+if [ -n "$secret" ]; then
+   logger -t "【ZeroTier】" "找到密钥文件，正在启动，请稍候..."
+   echo "$secret" >$config_path/identity.secret
+   $PROGIDT getpublic $config_path/identity.secret >$config_path/identity.public
+fi
+add_join $(nvram get zerotier_id)
+$PROG $args $config_path >/dev/null 2>&1 &
+rules
+
+if [ -n "$moonid" ]; then
+   $PROGCLI -D$config_path orbit $moonid $moonid
+   logger -t "【ZeroTier】" "orbit moonid $moonid ok!"
+fi
+zeromoonip="$(nvram get zeromoonwan)"
+moonip="$(nvram get zerotiermoon_ip)"
+if [ "$zeromoonip" = "1" ] || [ -n "$moonip" ]; then
+   logger -t "【ZeroTier】" "creat moon start!"
+   creat_moon
+   else
+   remove_moon
+fi
+zerotier_get_status
+eval "$scriptfilepath keep &"
+exit 0
+}
+
+add_join() {
+		touch $config_path/networks.d/$(nvram get zerotier_id).conf
+}
+
+rules() {
+	while [ "$(ifconfig | grep zt | awk '{print $1}')" = "" ]; do
+		sleep 1
+	done
+	zt0=$(ifconfig | grep zt | awk '{print $1}')
+	logger -t "【ZeroTier】" "已创建虚拟网卡 $zt0 "
+	del_rules
+	iptables -A INPUT -i $zt0 -j ACCEPT
+	iptables -A FORWARD -i $zt0 -o $zt0 -j ACCEPT
+	iptables -A FORWARD -i $zt0 -j ACCEPT
+	iptables -t nat -A POSTROUTING -o $zt0 -j MASQUERADE
+	while [ "$(ip route | grep "dev $zt0  proto" | awk '{print $1}')" = "" ]; do
+	sleep 1
+	done
+	ip_segment=`ip route | grep "dev $zt0  proto" | awk '{print $1}'`
+	iptables -t nat -A POSTROUTING -s $ip_segment -j MASQUERADE
+	logger -t "【ZeroTier】" "启用ZeroTier NAT"
+        logger -t "【ZeroTier】" "ZeroTier官网：https://my.zerotier.com/network"
+        
+}
+
+del_rules() {
+	zt0=$(ifconfig | grep zt | awk '{print $1}')
+	ip_segment=`ip route | grep "dev $zt0  proto" | awk '{print $1}'`
+	iptables -D FORWARD -i $zt0 -j ACCEPT 2>/dev/null
+	iptables -D FORWARD -o $zt0 -j ACCEPT 2>/dev/null
+	iptables -D FORWARD -i $zt0 -o $zt0 -j ACCEPT
+	iptables -D INPUT -i $zt0 -j ACCEPT 2>/dev/null
+	iptables -t nat -D POSTROUTING -o $zt0 -j MASQUERADE 2>/dev/null
+	iptables -t nat -D POSTROUTING -s $ip_segment -j MASQUERADE 2>/dev/null
+}
+
+#创建moon节点,下面的192.168.2.1改为你的Moon服务器 IP （请注意为公网IP），不支持动态域名
+creat_moon(){
+moonip="$(nvram get zerotiermoon_ip)"
+#检查是否合法ip
+regex="\b(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[1-9])\b"
+ckStep2=`echo $moonip | egrep $regex | wc -l`
+logger -t "【ZeroTier】" "搭建ZeroTier的Moon中转服务器，生成moon配置文件"
+zeromoonip="$(nvram get zeromoonwan)"
+if [ "$zeromoonip" = "1" ]; then
+   #自动获取wanip
+   ip_addr=`ifconfig -a ppp0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+   else
+   ip_addr=$moonip
+fi
+logger -t "【ZeroTier】" "ZeroTier Moon服务器 IP $ip_addr"
+if [ -e $config_path/identity.public ]; then
+   $PROGIDT initmoon $config_path/identity.public > $config_path/moon.json
+   if `sed -i "s/\[\]/\[ \"$ip_addr\/9993\" \]/" $config_path/moon.json >/dev/null 2>/dev/null`; then
+       logger -t "【ZeroTier】" "生成moon配置文件成功"
+       else
+       logger -t "【ZeroTier】" "生成moon配置文件失败"
+    fi
+   logger -t "【ZeroTier】" "生成签名文件"
+   cd $config_path
+   pwd
+   $PROGIDT genmoon $config_path/moon.json
+   [ $? -ne 0 ] && return 1
+   logger -t "【ZeroTier】" "创建moons.d文件夹，并把签名文件移动到文件夹内"
+   if [ ! -d "$config_path/moons.d" ]; then
+      mkdir -p $config_path/moons.d
+   fi
+   #服务器加入moon server
+   mv $config_path/*.moon $config_path/moons.d/ >/dev/null 2>&1
+   logger -t "【ZeroTier】" "moon节点创建完成"
+   zmoonid=`cat moon.json | awk -F "[id]" '/"id"/{print$0}'` >/dev/null 2>&1
+   zmoonid=`echo $zmoonid | awk -F "[:]" '/"id"/{print$2}'` >/dev/null 2>&1
+   zmoonid=`echo $zmoonid | tr -d '"|,'`
+   nvram set zerotiermoon_id="$zmoonid"
+   logger -t "【ZeroTier】" "已生成Moon服务器的ID: $zmoonid"
+   else
+   logger -t "【ZeroTier】" "identity.public不存在"
+ fi  
+}
+      
+remove_moon(){
+zmoonid="$(nvram get zerotiermoon_id)"
+if [ ! -n "$zmoonid"]; then
+  rm -f $config_path/moons.d/000000$zmoonid.moon
+  rm -f $config_path/moon.json
+  nvram set zerotiermoon_id=""
+fi
+}  
+
+zero_dl(){
+   sleep 2
+   zerotier_start
+}
+
+zerotier_up(){
+    logger -t "【ZeroTier】" "网络中断，重新启动"
+   zerotier_start
+}
+
+
+case $ACTION in
+start)
+	zerotier_close
+	zerotier_start
+	;;
+check)
+	zerotier_check
+	;;
+stop)
+	zerotier_close
+	;;
+keep)
+	#zerotier_keep
+	zerotier_keep
+	;;
+up)
+	zerotier_up
+	;;
+
+restart)
+	zerotier_restart o
+	zerotier_restart
+	;;
+
+*)
+	zerotier_check
+	;;
+esac
+
