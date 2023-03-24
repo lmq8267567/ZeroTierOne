@@ -13,8 +13,8 @@ fi
 rm -rf /tmp/zeroMD5.txt
 rm -rf /tmp/zero.tar.gz
 if [ ! -e "$SVC_PATH" ] || [ ! -s "$SVC_PATH" ] ; then
-       wgetcurl.sh "/tmp/zeroMD5.txt" "https://github.com/lmq8267/ZeroTierOne/releases/download/1.10.5/zeroMD5.txt"  
-       wgetcurl.sh "/tmp/zero.tar.gz" "https://github.com/lmq8267/ZeroTierOne/releases/download/1.10.5/zero.tar.gz"
+       wgetcurl.sh "/tmp/zeroMD5.txt" "https://fastly.jsdelivr.net/gh/lmq8267/ZeroTierOne@master/zeroMD5.txt"  
+       wgetcurl.sh "/tmp/zero.tar.gz" "https://fastly.jsdelivr.net/gh/lmq8267/ZeroTierOne@master/zero.tar.gz"
        zMD5="$(cat /tmp/zeroMD5.txt)"
        [ -f "/tmp/zero.tar.gz" ] && eval $(md5sum "/tmp/zero.tar.gz" | awk '{print "MD5_d="$1;}') && echo "$MD5_d"
        if [ "$zMD5"x = "$MD5_d"x ] ; then
