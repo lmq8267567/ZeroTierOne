@@ -40,6 +40,7 @@ if [ -f "/tmp/zero123/zeroup.sh" ] ; then
 fi
 sleep 10
 [ -f "/tmp/zero123/zeroup.sh" ] && [ -f "/etc/storage/zerotier.sh" ] && /tmp/zero123/zeroup.sh
+else
 logger -t "【ZeroTier】" "检测当前padavan不是hiboy版的，开始下载其他版padavan脚本"
 echo "检测当前padavan不是hiboy版的，开始下载其他版padavan脚本"
 if [ -f "/etc/storage/zerotier.sh" ] ; then
