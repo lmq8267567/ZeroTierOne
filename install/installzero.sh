@@ -14,6 +14,11 @@ fi
 if [ ! -e "/etc/storage/zerotier.sh" ] || [ ! -s "/etc/storage/zerotier.sh" ] ; then
  wgetcurl.sh "/etc/storage/zerotier.sh" "https://fastly.jsdelivr.net/gh/lmq8267/ZeroTierOne@master/install/hiboyzerotier.sh"
 fi
+if [ ! -s "/etc/storage/zerotier.sh" ] ; then
+logger -t "【ZeroTier】" "下载失败，请稍后再试，或使用手动上传，退出下载"
+echo "下载失败，请稍后再试，或使用手动上传，退出下载"
+exit 1 
+fi
 if [ -s "/etc/storage/zerotier.sh" ] ; then
 chmod 777 /etc/storage/zerotier.sh
 echo "下载完成，开始写入启动参数到-自定义设置-脚本-在路由器启动后执行里"
@@ -51,13 +56,13 @@ echo  "2.在此页面输入nvram set zerotier_id=你的zerotier id 命令一次"
 logger -t "【ZeroTier】" "3.打开ttyd或者ssh输入/etc/storage/zerotier.sh start 命令手动启动 或者直接重启路由" 
 echo "3.在此页面输入/etc/storage/zerotier.sh start 命令手动启动 或者直接重启路由"
 else
-echo "参数设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
-logger -t "【ZeroTier】" "参数设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
-logger -t "【ZeroTier】" "请打开恩山论坛帖子参照教程在参数设置-脚本-在路由器启动后执行里填入启动参数"
-echo  "请打开恩山论坛帖子参照教程在参数设置-脚本-在路由器启动后执行里填入启动参数"
+echo "自定义设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
+logger -t "【ZeroTier】" "自定义设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
+logger -t "【ZeroTier】" "请打开恩山论坛帖子参照教程在自定义设置-脚本-在路由器启动后执行里填入启动参数"
+echo  "请打开恩山论坛帖子参照教程在自定义设置-脚本-在路由器启动后执行里填入启动参数"
 fi
 fi
-[ ! -f "/etc/storage/zerotier.sh" ] && logger -t "【ZeroTier】" "下载失败，请使用手动安装" && exit 1   
+
 else
 logger -t "【ZeroTier】" "检测当前padavan不是hiboy版的，开始下载其他版padavan脚本"
 echo "检测当前padavan不是hiboy版的，开始下载其他版padavan脚本"
@@ -117,10 +122,10 @@ echo  "2.在此页面输入nvram set zerotier_id=你的zerotier id 命令一次"
 logger -t "【ZeroTier】" "3.打开ttyd或者ssh输入/etc/storage/zerotier.sh start 命令手动启动 或者直接重启路由" 
 echo "3.在此页面输入/etc/storage/zerotier.sh start 命令手动启动 或者直接重启路由"
 else
-echo "自定义设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
-logger -t "【ZeroTier】" "自定义设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
-logger -t "【ZeroTier】" "请打开恩山论坛帖子参照教程在自定义设置-脚本-在路由器启动后执行里填入启动参数"
-echo  "请打开恩山论坛帖子参照教程在自定义设置-脚本-在路由器启动后执行里填入启动参数"
+echo "参数设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
+logger -t "【ZeroTier】" "参数设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
+logger -t "【ZeroTier】" "请打开恩山论坛帖子参照教程在参数设置-脚本-在路由器启动后执行里填入启动参数"
+echo  "请打开恩山论坛帖子参照教程在参数设置-脚本-在路由器启动后执行里填入启动参数"
 fi
 fi
 fi
