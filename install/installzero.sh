@@ -61,7 +61,6 @@ logger -t "【ZeroTier】" "自定义设置-脚本-在路由启动后执行里�
 logger -t "【ZeroTier】" "请打开恩山论坛帖子参照教程在自定义设置-脚本-在路由器启动后执行里填入启动参数"
 echo  "请打开恩山论坛帖子参照教程在自定义设置-脚本-在路由器启动后执行里填入启动参数"
 fi
-fi
 plb=$(find / -name "identity.public")
 plb1=$(find / -name "authtoken.secret")
 plb2=$(find / -name "identity.secret")
@@ -77,6 +76,7 @@ echo  "找到已使用的zerotier密钥，开始启动zerotier"
 echo  "请不要忘记在自定义设置-脚本-在路由器启动后执行里填入zerotier_id并应用保存设置"
 /etc/storage/zerotier.sh start &
 exit 0 
+fi
 fi
 else
 logger -t "【ZeroTier】" "检测当前padavan不是hiboy版的，开始下载其他版padavan脚本"
@@ -142,7 +142,6 @@ logger -t "【ZeroTier】" "参数设置-脚本-在路由启动后执行里已�
 logger -t "【ZeroTier】" "请打开恩山论坛帖子参照教程在参数设置-脚本-在路由器启动后执行里填入启动参数"
 echo  "请打开恩山论坛帖子参照教程在参数设置-脚本-在路由器启动后执行里填入启动参数"
 fi
-fi
 plb=$(find / -name "identity.public")
 plb1=$(find / -name "authtoken.secret")
 plb2=$(find / -name "identity.secret")
@@ -159,6 +158,7 @@ echo  "请不要忘记在参数设置-脚本-在路由器启动后执行里填�
 [ -s /usr/bin/zerotier.sh ] && nvram set zerotier_enable=0 && zerotier.sh stop
 /etc/storage/zerotier.sh start &
 exit 0 
+fi
 fi
 fi
 
