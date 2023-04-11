@@ -62,8 +62,38 @@ echo "下载失败，请稍后再试，或使用手动上传"
 fi
 if [ -f "/etc/storage/zerotier.sh" ] ; then
    chmod 777 /etc/storage/zerotier.sh
-   logger -t "【ZeroTier】" "脚本下载完成，请打开恩山论坛帖子参照教程1.在参数设置-脚本-在路由器启动后执行里填入启动参数，填写你zerotier id"
-   echo  "脚本下载完成，请打开恩山论坛帖子参照教程1.在参数设置-脚本-在路由器启动后执行里填入启动参数，填写你zerotier id"
+cat /etc/storage/started_script.sh | grep -o 'zerotier_moonid' &>/dev/null
+if [ $? -ne 0 ]; then
+echo "开始写入启动参数到-参数设置-脚本-在路由启动后执行里"
+
+cat >> "/etc/storage/started_script.sh" <<-OSC
+
+#################zerotier启动参数#################################
+#填写你在zerotier官网创建的网络ID，填写格式如:nvram set zerotier_id=6cccb567v880adf8
+nvram set zerotier_id=
+
+#填写Moon服务器生成的ID，没有则不填，填写格式如:=a56c826623
+nvram set zerotier_moonid=
+
+#ZeroTier Moon服务器 IP，必须公网IP,填写格式如=175.13.156.223
+nvram set zerotiermoon_ip=
+
+#下方填=1将使用Wan口获得的IP作为服务器 IP（请确认Wan口为公网IP）
+nvram set zeromoonwan=
+
+#zerotier自动更新版本,留空不启用，启用填=y
+zerotier_upgrade=
+
+#启用开机自启              
+/etc/storage/zerotier.sh start &
+#################################################################
+
+OSC
+else
+echo "参数设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
+logger -t "【ZeroTier】" "参数设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
+   logger -t "【ZeroTier】" "请打开恩山论坛帖子参照教程1.在参数设置-脚本-在路由器启动后执行里填入启动参数"
+   echo  "请打开恩山论坛帖子参照教程1.在参数设置-脚本-在路由器启动后执行里填入启动参数"
    logger -t "【ZeroTier】" "2.在系统管理-控制台输入nvram set zerotier_id=你的zerotier id 命令一次"
    echo  "2.在系统管理-控制台输入nvram set zerotier_id=你的zerotier id 命令一次"
    logger -t "【ZeroTier】" "3.在系统管理-控制台输入/etc/storage/zerotier.sh start 命令手动启动" 
