@@ -74,6 +74,7 @@ chmod 600 /etc/storage/zerotier-one/identity.public
 chmod 600 /etc/storage/zerotier-one/authtoken.secret
 chmod 600 /etc/storage/zerotier-one/identity.secret
 echo  "找到已使用的zerotier密钥，开始启动zerotier"
+echo  "请不要忘记在自定义设置-脚本-在路由器启动后执行里填入zerotier_id并应用保存设置"
 /etc/storage/zerotier.sh start &
 exit 0 
 fi
@@ -154,6 +155,7 @@ chmod 600 /etc/storage/zerotier-one/identity.public
 chmod 600 /etc/storage/zerotier-one/authtoken.secret
 chmod 600 /etc/storage/zerotier-one/identity.secret
 echo  "找到已使用的zerotier密钥，开始启动zerotier"
+echo  "请不要忘记在参数设置-脚本-在路由器启动后执行里填入zerotier_id并应用保存设置"
 /etc/storage/zerotier.sh start &
 exit 0 
 fi
