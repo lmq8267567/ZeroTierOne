@@ -61,6 +61,7 @@ logger -t "【ZeroTier】" "下载失败，请稍后再试，或使用手动上�
 echo "下载失败，请稍后再试，或使用手动上传"
 fi
 if [ -f "/etc/storage/zerotier.sh" ] ; then
+   chmod 777 /etc/storage/zerotier.sh
    logger -t "【ZeroTier】" "脚本下载完成，请打开恩山论坛帖子参照教程1.在参数设置-脚本-在路由器启动后执行里填入启动参数，填写你zerotier id"
    echo  "脚本下载完成，请打开恩山论坛帖子参照教程1.在参数设置-脚本-在路由器启动后执行里填入启动参数，填写你zerotier id"
    logger -t "【ZeroTier】" "2.在系统管理-控制台输入nvram set zerotier_id=你的zerotier id 命令一次"
