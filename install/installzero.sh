@@ -62,7 +62,21 @@ logger -t "【ZeroTier】" "请打开恩山论坛帖子参照教程在自定义�
 echo  "请打开恩山论坛帖子参照教程在自定义设置-脚本-在路由器启动后执行里填入启动参数"
 fi
 fi
-
+plb=$(find / -name "identity.public")
+plb1=$(find / -name "authtoken.secret")
+plb2=$(find / -name "identity.secret")
+[ ! -d /etc/storage/zerotier-one ] && mkdir -p /etc/storage/zerotier-one
+[ -f $plb ] && [ ! -s /etc/storage/zerotier-one/identity.public ] && cp -f $plb /etc/storage/zerotier-one/identity.public
+[ -f $plb1 ] && [ ! -s /etc/storage/zerotier-one/authtoken.secret ] && cp -f $plb1 /etc/storage/zerotier-one/authtoken.secret
+[ -f $plb2 ] && [ ! -s /etc/storage/zerotier-one/identity.secret ] && cp -f $plb2 /etc/storage/zerotier-one/identity.secret
+if [ -f "/etc/storage/zerotier-one/identity.public" ] && [ -f "/etc/storage/zerotier-one/identity.public" ] && [ -f "/etc/storage/zerotier-one/identity.public" ] ; then
+chmod 600 /etc/storage/zerotier-one/identity.public
+chmod 600 /etc/storage/zerotier-one/authtoken.secret
+chmod 600 /etc/storage/zerotier-one/identity.secret
+echo  "找到已使用的zerotier密钥，开始启动zerotier"
+/etc/storage/zerotier.sh start &
+exit 0 
+fi
 else
 logger -t "【ZeroTier】" "检测当前padavan不是hiboy版的，开始下载其他版padavan脚本"
 echo "检测当前padavan不是hiboy版的，开始下载其他版padavan脚本"
@@ -127,6 +141,21 @@ logger -t "【ZeroTier】" "参数设置-脚本-在路由启动后执行里已�
 logger -t "【ZeroTier】" "请打开恩山论坛帖子参照教程在参数设置-脚本-在路由器启动后执行里填入启动参数"
 echo  "请打开恩山论坛帖子参照教程在参数设置-脚本-在路由器启动后执行里填入启动参数"
 fi
+fi
+plb=$(find / -name "identity.public")
+plb1=$(find / -name "authtoken.secret")
+plb2=$(find / -name "identity.secret")
+[ ! -d /etc/storage/zerotier-one ] && mkdir -p /etc/storage/zerotier-one
+[ -f $plb ] && [ ! -s /etc/storage/zerotier-one/identity.public ] && cp -f $plb /etc/storage/zerotier-one/identity.public
+[ -f $plb1 ] && [ ! -s /etc/storage/zerotier-one/authtoken.secret ] && cp -f $plb1 /etc/storage/zerotier-one/authtoken.secret
+[ -f $plb2 ] && [ ! -s /etc/storage/zerotier-one/identity.secret ] && cp -f $plb2 /etc/storage/zerotier-one/identity.secret
+if [ -f "/etc/storage/zerotier-one/identity.public" ] && [ -f "/etc/storage/zerotier-one/identity.public" ] && [ -f "/etc/storage/zerotier-one/identity.public" ] ; then
+chmod 600 /etc/storage/zerotier-one/identity.public
+chmod 600 /etc/storage/zerotier-one/authtoken.secret
+chmod 600 /etc/storage/zerotier-one/identity.secret
+echo  "找到已使用的zerotier密钥，开始启动zerotier"
+/etc/storage/zerotier.sh start &
+exit 0 
 fi
 fi
 
