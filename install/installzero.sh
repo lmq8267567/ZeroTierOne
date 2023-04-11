@@ -102,8 +102,8 @@ exit 1
 fi
 if [ -s "/etc/storage/zerotier.sh" ] ; then
 chmod 777 /etc/storage/zerotier.sh
-echo "下载完成，开始写入启动参数到-自定义设置-脚本-在路由器启动后执行里"
-logger -t "【ZeroTier】" "下载完成，开始写入启动参数到-自定义设置-脚本-在路由器启动后执行里"
+echo "下载完成，开始写入启动参数到-参数设置-脚本-在路由器启动后执行里"
+logger -t "【ZeroTier】" "下载完成，开始写入启动参数到-参数设置-脚本-在路由器启动后执行里"
 cat /etc/storage/started_script.sh | grep -o 'zerotier_moonid' &>/dev/null
 if [ $? -ne 0 ]; then
 cat >> "/etc/storage/started_script.sh" <<-OSC
