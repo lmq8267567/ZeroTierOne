@@ -161,6 +161,7 @@ fi
 [ -z "$tag" ] && tag="$(curl -k --silent "https://api.github.com/repos/lmq8267/ZeroTierOne/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')"
 if [ ! -s "$SVC_PATH" ] ; then
    logger -t "【ZeroTier】" "找不到$SVC_PATH,开始安装"
+   rm -rf "$PROG" "$PROGCLI" "$PROGIDT"
    if [ ! -s "$SVC_PATH2" ] || [ ! -s "$SVC_PATH2" ] ; then
        rm -rf /etc/storage/zerotier-one/MD5.txt
        if [ ! -z "$tag" ] ; then
@@ -196,25 +197,28 @@ if [ ! -s "$SVC_PATH" ] ; then
      if [ ! -s "$SVC_PATH" ] ; then   
         if [ "$zeroMD5"x = "$MD5_down"x ] ; then
             logger -t "【ZeroTier】" "安装包MD5匹配，开始解压..."
+	    rm -rf /tmp/var/zerotier-one
             tar -xzvf "$SVC_PATH2" -C /tmp/var
-            [ -s /tmp/var/zerotier/zerotier-one ] && cp -rf /tmp/var/zerotier/* /opt/bin/*
+            [ -s /tmp/var/zerotier-one/zerotier-one ] && cp -rf /tmp/var/zerotier-one/* /opt/bin/
             sleep 5
-            rm -rf "$SVC_PATH2" /tmp/var/zerotier
+            rm -rf "$SVC_PATH2" "/tmp/var/zerotier-one"
             else
             logger -t "【ZeroTier】" "安装包MD5不匹配，删除..."
-            rm -rf "$SVC_PATH2"
+            rm -rf "$SVC_PATH2" "/tmp/var/zerotier-one"
             rm -rf /etc/storage/zerotier-one/zerotier.tar.gz
             rm -rf /tmp/zerotier.tar.gz
             zero_dl
         fi
      fi
 fi
+[ ! -s "$PROGCLI" ] && ln -sf "$PROG" "$PROGCLI"
+[ ! -s "$PROGIDT" ] && ln -sf "$PROG" "$PROGIDT"
       chmod 777 "$PROG" "$PROGCLI" "$PROGIDT"
  if [ -s "$SVC_PATH" ] ; then
        zerotier_v=$($SVC_PATH -version | sed -n '1p')
        echo "$tag"
        echo "$zerotier_v"
-       [ -z "$zerotier_v" ] && logger -t "【ZeroTier】" " 程序不完整，删除，重新下载" && rm -rf "$SVC_PATH2" "/etc/storage/zerotier-one/zerotier.tar.gz" "/tmp/zerotier.tar.gz" && zero_dl
+       [ -z "$zerotier_v" ] && logger -t "【ZeroTier】" " 程序不完整，删除，重新下载" && rm -rf "$SVC_PATH2" "/etc/storage/zerotier-one/zerotier.tar.gz" "/tmp/zerotier.tar.gz" "/tmp/var/zerotier-one" "$PROG" "$PROGCLI" "$PROGIDT" && zero_dl
        [ ! -z "$zerotier_v" ] && logger -t "【ZeroTier】" " $SVC_PATH 安装成功，版本号:v$zerotier_v "
        if [ ! -z "$tag" ] && [ ! -z "$zerotier_v" ] ; then
           if [ "$tag"x != "$zerotier_v"x ] ; then
