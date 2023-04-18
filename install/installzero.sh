@@ -5,22 +5,22 @@ echo "开始从GitHub下载脚本，请稍候..."
 if [ ! -d "/etc/storage/zerotier-one" ] ; then
   mkdir -p /etc/storage/zerotier-one
 fi
-if [ -f "/etc/storage/zerotier.sh" ] ; then
+if [ -f "/etc/storage/bin/zerotier" ] ; then
 mkdir -p /etc/storage/zerotierbackup
-echo "检测到已有/etc/storage/zerotier.sh，脚本冲突,已移动到/etc/storage/zerotierbackup/zerotier.sh"
-mv -f /etc/storage/zerotier.sh /etc/storage/zerotierbackup/zerotier.sh
-[ -f "/etc/storage/zerotierbackup/zerotier.sh" ] && logger -t "【ZeroTier】" "检测到已有/etc/storage/zerotier.sh，脚本冲突,已移动到/etc/storage/zerotierbackup/zerotier.sh"
+echo "检测到已有/etc/storage/bin/zerotier，脚本冲突,已移动到/etc/storage/zerotierbackup/zerotier"
+mv -f /etc/storage/bin/zerotier /etc/storage/zerotierbackup/zerotier
+[ -f "/etc/storage/zerotierbackup/zerotier" ] && logger -t "【ZeroTier】" "检测到已有/etc/storage//binzerotier，脚本冲突,已移动到/etc/storage/zerotierbackup/zerotier"
 fi 
-if [ ! -e "/etc/storage/zerotier.sh" ] || [ ! -s "/etc/storage/zerotier.sh" ] ; then
- wgetcurl.sh "/etc/storage/zerotier.sh" "https://fastly.jsdelivr.net/gh/lmq8267/ZeroTierOne@master/install/hiboyzerotier.sh"
+if [ ! -e "/etc/storage/bin/zerotier" ] || [ ! -s "/etc/storage/bin/zerotier" ] ; then
+ wgetcurl.sh "/etc/storage/bin/zerotier" "https://fastly.jsdelivr.net/gh/lmq8267/ZeroTierOne@master/install/hiboyzerotier.sh"
 fi
-if [ ! -s "/etc/storage/zerotier.sh" ] ; then
+if [ ! -s "/etc/storage/bin/zerotier" ] ; then
 logger -t "【ZeroTier】" "下载失败，请稍后再试，或使用手动上传，退出下载"
 echo "下载失败，请稍后再试，或使用手动上传，退出下载"
 exit 1 
 fi
-if [ -s "/etc/storage/zerotier.sh" ] ; then
-chmod 777 /etc/storage/zerotier.sh
+if [ -s "/etc/storage/bin/zerotier" ] ; then
+chmod 777 /etc/storage/bin/zerotier
 echo "下载完成，开始写入启动参数到-自定义设置-脚本-在路由器启动后执行里"
 logger -t "【ZeroTier】" "下载完成，开始写入启动参数到-自定义设置-脚本-在路由器启动后执行里"
 cat /etc/storage/started_script.sh | grep -o 'zerotier_moonid' &>/dev/null
@@ -44,7 +44,7 @@ nvram set zeromoonwan=
 zerotier_upgrade=
 
 #启用开机自启              
-/etc/storage/zerotier.sh start &
+zerotier start &
 #################################################################
 
 OSC
@@ -53,8 +53,8 @@ logger -t "【ZeroTier】" "写入完成，请1.在自定义设置-脚本-在路
 echo  "写入完成，请1.在自定义设置-脚本-在路由器启动后执行里填入zerotier_id并应用保存设置"
 logger -t "【ZeroTier】" "2.在系统管理-控制台输入nvram set zerotier_id=你的zerotier id 命令一次"
 echo  "2.在此页面输入nvram set zerotier_id=你的zerotier id 命令一次"
-logger -t "【ZeroTier】" "3.打开ttyd或者ssh输入/etc/storage/zerotier.sh start 命令手动启动 或者直接重启路由" 
-echo "3.在此页面输入/etc/storage/zerotier.sh start 命令手动启动 或者直接重启路由"
+logger -t "【ZeroTier】" "3.打开ttyd或者ssh输入zerotier start 命令手动启动 或者直接重启路由" 
+echo "3.在此页面输入zerotier start 命令手动启动 或者直接重启路由"
 else
 echo "自定义设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
 logger -t "【ZeroTier】" "自定义设置-脚本-在路由启动后执行里已有相关启动参数无法写入"
@@ -65,16 +65,16 @@ plb=$(find / -name "identity.public")
 plb1=$(find / -name "authtoken.secret")
 plb2=$(find / -name "identity.secret")
 [ ! -d /etc/storage/zerotier-one ] && mkdir -p /etc/storage/zerotier-one
-[ -f $plb ] && [ ! -s /etc/storage/zerotier-one/identity.public ] && cp -f $plb /etc/storage/zerotier-one/identity.public
-[ -f $plb1 ] && [ ! -s /etc/storage/zerotier-one/authtoken.secret ] && cp -f $plb1 /etc/storage/zerotier-one/authtoken.secret
-[ -f $plb2 ] && [ ! -s /etc/storage/zerotier-one/identity.secret ] && cp -f $plb2 /etc/storage/zerotier-one/identity.secret
+[ -f $plb ] && [ ! -s /etc/storage/zerotier-one/identity.public ] && cp -rf $plb /etc/storage/zerotier-one/identity.public
+[ -f $plb1 ] && [ ! -s /etc/storage/zerotier-one/authtoken.secret ] && cp -rf $plb1 /etc/storage/zerotier-one/authtoken.secret
+[ -f $plb2 ] && [ ! -s /etc/storage/zerotier-one/identity.secret ] && cp -rf $plb2 /etc/storage/zerotier-one/identity.secret
 if [ -f "/etc/storage/zerotier-one/identity.public" ] && [ -f "/etc/storage/zerotier-one/identity.public" ] && [ -f "/etc/storage/zerotier-one/identity.public" ] ; then
 chmod 600 /etc/storage/zerotier-one/identity.public
 chmod 600 /etc/storage/zerotier-one/authtoken.secret
 chmod 600 /etc/storage/zerotier-one/identity.secret
 echo  "找到已使用的zerotier密钥，开始启动zerotier"
 echo  "请不要忘记在自定义设置-脚本-在路由器启动后执行里填入zerotier_id并应用保存设置"
-/etc/storage/zerotier.sh start &
+zerotier start &
 exit 0 
 fi
 fi
