@@ -79,7 +79,7 @@ zerotier_keep  () {
 [ ! -z "\`pidof zerotier-one\`" ] && logger -t "【ZeroTier】" "启动成功"
 if [ -s /tmp/script/_opt_script_check ]; then
 SVC_PATH="$(which zerotier-one)"
-[ ! -s "$SVC_PATH" ] && SVC_PATH="/etc/storage/zerotier-one/zerotier-one"
+[ ! -s "$SVC_PATH" ] && SVC_PATH="/opt/bin/zerotier-one"
 [ ! -s "$SVC_PATH" ] && SVC_PATH="/tmp/zerotier-one/zerotier-one"
 logger -t "【ZeroTier】" "守护进程启动"
 sed -Ei '/【ZeroTier】|^$/d' /tmp/script/_opt_script_check
@@ -109,21 +109,21 @@ sleep 20
 [ -n "$ip33" ] && ping_zero3=$(ping -4 $ip33.1 -c 3 -w 6 -q)
 [ -n "$ip44" ] && ping_zero4=$(ping -4 $ip44.1 -c 3 -w 6 -q)
 [ -n "$ip55" ] && ping_zero5=$(ping -4 $ip55.1 -c 3 -w 6 -q)
-[ -n "$ip11" ] && ping_time1=`echo $ping_zero1 | awk -F '/' '{print $4}'| awk -F '.' '{print $1}'`
-[ -n "$ip22" ] && ping_time2=`echo $ping_zero2 | awk -F '/' '{print $4}'| awk -F '.' '{print $1}'`
-[ -n "$ip33" ] && ping_time3=`echo $ping_zero3 | awk -F '/' '{print $4}'| awk -F '.' '{print $1}'`
-[ -n "$ip44" ] && ping_time4=`echo $ping_zero4 | awk -F '/' '{print $4}'| awk -F '.' '{print $1}'`
-[ -n "$ip55" ] && ping_time5=`echo $ping_zero5 | awk -F '/' '{print $4}'| awk -F '.' '{print $1}'`
+[ -n "$ip11" ] && ping_time1=`echo $ping_zero1 | awk -F '/' '{print $4}'`
+[ -n "$ip22" ] && ping_time2=`echo $ping_zero2 | awk -F '/' '{print $4}'`
+[ -n "$ip33" ] && ping_time3=`echo $ping_zero3 | awk -F '/' '{print $4}'`
+[ -n "$ip44" ] && ping_time4=`echo $ping_zero4 | awk -F '/' '{print $4}'`
+[ -n "$ip55" ] && ping_time5=`echo $ping_zero5 | awk -F '/' '{print $4}'`
 [ -n "$ip11" ] && ping_loss1=`echo $ping_zero1 | awk -F ', ' '{print $3}' | awk '{print $1}'`
 [ -n "$ip22" ] && ping_loss2=`echo $ping_zero2 | awk -F ', ' '{print $3}' | awk '{print $1}'`
 [ -n "$ip33" ] && ping_loss3=`echo $ping_zero3 | awk -F ', ' '{print $3}' | awk '{print $1}'`
 [ -n "$ip44" ] && ping_loss4=`echo $ping_zero4 | awk -F ', ' '{print $3}' | awk '{print $1}'`
 [ -n "$ip55" ] && ping_loss5=`echo $ping_zero5 | awk -F ', ' '{print $3}' | awk '{print $1}'`
-[ ! -z "$ping_time1" ] && logger -t "【ZeroTier】" "已连通"$ip11".1，延迟:$ping_time1 ms 丢包率：$ping_loss1 "
-[ ! -z "$ping_time2" ] && logger -t "【ZeroTier】" "已连通"$ip22".1，延迟:$ping_time2 ms 丢包率：$ping_loss2 "
-[ ! -z "$ping_time3" ] && logger -t "【ZeroTier】" "已连通"$ip33".1，延迟:$ping_time3 ms 丢包率：$ping_loss3 "
-[ ! -z "$ping_time4" ] && logger -t "【ZeroTier】" "已连通"$ip44".1，延迟:$ping_time4 ms 丢包率：$ping_loss4 "
-[ ! -z "$ping_time5" ] && logger -t "【ZeroTier】" "已连通"$ip55".1，延迟:$ping_time5 ms 丢包率：$ping_loss5 "
+[ ! -z "$ping_time1" ] && logger -t "【ZeroTier】" "节点 "$ip11".1，延迟:$ping_time1 ms 丢包率：$ping_loss1 "
+[ ! -z "$ping_time2" ] && logger -t "【ZeroTier】" "节点 "$ip22".1，延迟:$ping_time2 ms 丢包率：$ping_loss2 "
+[ ! -z "$ping_time3" ] && logger -t "【ZeroTier】" "节点 "$ip33".1，延迟:$ping_time3 ms 丢包率：$ping_loss3 "
+[ ! -z "$ping_time4" ] && logger -t "【ZeroTier】" "节点 "$ip44".1，延迟:$ping_time4 ms 丢包率：$ping_loss4 "
+[ ! -z "$ping_time5" ] && logger -t "【ZeroTier】" "节点 "$ip55".1，延迟:$ping_time5 ms 丢包率：$ping_loss5 "
 
 }
 
@@ -407,8 +407,8 @@ keep)
 	;;
 
 restart)
-	zerotier_restart o
-	zerotier_restart
+	zerotier_close
+	zerotier_start
 	;;
 
 *)
