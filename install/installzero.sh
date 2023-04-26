@@ -5,22 +5,22 @@ echo "开始从GitHub下载脚本，请稍候..."
 if [ ! -d "/etc/storage/zerotier-one" ] ; then
   mkdir -p /etc/storage/zerotier-one
 fi
-if [ -f "/etc/storage/bin/zerotier" ] ; then
+if [ -f "/etc/storage/zerotier.sh" ] ; then
 mkdir -p /etc/storage/zerotierbackup
-echo "检测到已有/etc/storage/bin/zerotier，脚本冲突,已移动到/etc/storage/zerotierbackup/zerotier"
-mv -f /etc/storage/bin/zerotier /etc/storage/zerotierbackup/zerotier
-[ -f "/etc/storage/zerotierbackup/zerotier" ] && logger -t "【ZeroTier】" "检测到已有/etc/storage//binzerotier，脚本冲突,已移动到/etc/storage/zerotierbackup/zerotier"
+echo "检测到已有/etc/storage/zerotier.sh，脚本冲突,已移动到/etc/storage/zerotierbackup/zerotier.sh"
+mv -f /etc/storage/zerotier.sh /etc/storage/zerotierbackup/zerotier.sh
+[ -f "/etc/storage/zerotierbackup/zerotier.sh" ] && logger -t "【ZeroTier】" "检测到已有/etc/storage//zerotier.sh，脚本冲突,已移动到/etc/storage/zerotierbackup/zerotier.sh"
 fi 
-if [ ! -e "/etc/storage/bin/zerotier" ] || [ ! -s "/etc/storage/bin/zerotier" ] ; then
- wgetcurl.sh "/etc/storage/bin/zerotier" "https://fastly.jsdelivr.net/gh/lmq8267/ZeroTierOne@master/install/hiboyzerotier.sh"
+if [ ! -e "/etc/storage/zerotier.sh" ] || [ ! -s "/etc/storage/zerotier.sh" ] ; then
+ wgetcurl.sh "/etc/storage/zerotier.sh" "https://fastly.jsdelivr.net/gh/lmq8267/ZeroTierOne@master/install/hiboyzerotier.sh"
 fi
-if [ ! -s "/etc/storage/bin/zerotier" ] ; then
+if [ ! -s "/etc/storage/zerotier.sh" ] ; then
 logger -t "【ZeroTier】" "下载失败，请稍后再试，或使用手动上传，退出下载"
 echo "下载失败，请稍后再试，或使用手动上传，退出下载"
 exit 1 
 fi
-if [ -s "/etc/storage/bin/zerotier" ] ; then
-chmod 777 /etc/storage/bin/zerotier
+if [ -s "/etc/storage/zerotier.sh" ] ; then
+chmod 777 /etc/storage/zerotier.sh
 echo "下载完成，开始写入启动参数到-自定义设置-脚本-在路由器启动后执行里"
 logger -t "【ZeroTier】" "下载完成，开始写入启动参数到-自定义设置-脚本-在路由器启动后执行里"
 cat /etc/storage/started_script.sh | grep -o 'zerotier_moonid' &>/dev/null
@@ -44,7 +44,7 @@ nvram set zeromoonwan=
 zerotier_upgrade=
 
 #启用开机自启              
-zerotier start &
+/etc/storage/zerotier.sh start &
 #################################################################
 
 OSC
@@ -74,7 +74,7 @@ chmod 600 /etc/storage/zerotier-one/authtoken.secret
 chmod 600 /etc/storage/zerotier-one/identity.secret
 echo  "找到已使用的zerotier密钥，开始启动zerotier"
 echo  "请不要忘记在自定义设置-脚本-在路由器启动后执行里填入zerotier_id并应用保存设置"
-zerotier start &
+/etc/storage/zerotier.sh start &
 exit 0 
 fi
 fi
