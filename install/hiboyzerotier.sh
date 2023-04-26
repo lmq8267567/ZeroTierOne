@@ -92,10 +92,13 @@ fi
 }
 
 zero_ping() {
+while [ "$(ifconfig | grep zt | awk '{print $1}')" = "" ]; do
+		sleep 1
+done
+zt0=$(ifconfig | grep zt | awk '{print $1}')
 while [ "$(ip route | grep "dev $zt0  proto static" | awk '{print $1}' | awk -F '/' '{print $1}')" = "" ]; do
 sleep 1
 done
-zt0=$(ifconfig | grep zt | awk '{print $1}')
 ip00=$(ip route | grep "dev "$zt0"  proto static" | awk '{print $1}' | awk -F '/' '{print $1}')
 [ -n "$ip00" ] && logger -t "【ZeroTier】" "zerotier虚拟局域网内设备：$ip00 "
 ip11=$(ip route | grep "dev "$zt0"  proto static" | awk '{print $1}' | awk -F '/' '{print $1}'| awk 'NR==1 {print $1}'|cut -d. -f1,2,3)
@@ -104,11 +107,11 @@ ip33=$(ip route | grep "dev "$zt0"  proto static" | awk '{print $1}' | awk -F '/
 ip44=$(ip route | grep "dev "$zt0"  proto static" | awk '{print $1}' | awk -F '/' '{print $1}'| awk 'NR==4 {print $1}'|cut -d. -f1,2,3)
 ip55=$(ip route | grep "dev "$zt0"  proto static" | awk '{print $1}' | awk -F '/' '{print $1}'| awk 'NR==5 {print $1}'|cut -d. -f1,2,3)
 sleep 20
-[ -n "$ip11" ] && ping_zero1=$(ping -4 $ip11.1 -c 3 -w 6 -q)
-[ -n "$ip22" ] && ping_zero2=$(ping -4 $ip22.1 -c 3 -w 6 -q)
-[ -n "$ip33" ] && ping_zero3=$(ping -4 $ip33.1 -c 3 -w 6 -q)
-[ -n "$ip44" ] && ping_zero4=$(ping -4 $ip44.1 -c 3 -w 6 -q)
-[ -n "$ip55" ] && ping_zero5=$(ping -4 $ip55.1 -c 3 -w 6 -q)
+[ -n "$ip11" ] && ping_zero1=$(ping -4 $ip11.1 -c 2 -w 4 -q)
+[ -n "$ip22" ] && ping_zero2=$(ping -4 $ip22.1 -c 2 -w 4 -q)
+[ -n "$ip33" ] && ping_zero3=$(ping -4 $ip33.1 -c 2 -w 4 -q)
+[ -n "$ip44" ] && ping_zero4=$(ping -4 $ip44.1 -c 2 -w 4 -q)
+[ -n "$ip55" ] && ping_zero5=$(ping -4 $ip55.1 -c 2 -w 4 -q)
 [ -n "$ip11" ] && ping_time1=`echo $ping_zero1 | awk -F '/' '{print $4}'`
 [ -n "$ip22" ] && ping_time2=`echo $ping_zero2 | awk -F '/' '{print $4}'`
 [ -n "$ip33" ] && ping_time3=`echo $ping_zero3 | awk -F '/' '{print $4}'`
