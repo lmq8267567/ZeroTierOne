@@ -274,11 +274,6 @@ if [ -n "$secret" ]; then
    echo "$secret" >$config_path/identity.secret
    $PROGIDT getpublic $config_path/identity.secret >$config_path/identity.public
 fi
-if [ -n "$secret" ]; then
-   logger -t "【ZeroTier】" "找到密钥文件，正在启动，请稍候..."
-   echo "$secret" >$config_path/identity.secret
-   $PROGIDT getpublic $config_path/identity.secret >$config_path/identity.public
-fi
 if [ -n "$planet"]; then
 		logger -t "【ZeroTier】" "找到planet,正在写入..."
 		echo "$planet" >$config_path/planet.tmp
@@ -349,7 +344,10 @@ rules() {
 	iptables -t nat -A POSTROUTING -s $ip_segment -j MASQUERADE
 	logger -t "【ZeroTier】" "启用ZeroTier NAT"
         logger -t "【ZeroTier】" "ZeroTier官网：https://my.zerotier.com/network"
-        
+        ####访问上级路由其他设备添加路由规则命令##
+	#ip route add $zero_ip via $zero_route dev $zt0
+	#其中$zero_ip改为zerotier官网分配的ip   $zero_route改为你想要访问的上级路由网段如 192.168.30.0/24     $zt0改为你的zerotier网卡名 如ztoj56Rop2
+	#删除命令ip route del $zero_ip via $zero_route dev $zt0
 }
 
 del_rules() {
