@@ -262,7 +262,7 @@ rules() {
 
 del_rules() {
 	zt0=$(ifconfig | grep zt | awk '{print $1}')
-	ip_segment=`ip route | grep "dev $zt0  proto kernel" | awk '{print $1}'`
+	ip_segment=`ip route | grep "dev $zt0  proto" | awk '{print $1}'`
 	iptables -D FORWARD -i $zt0 -j ACCEPT 2>/dev/null
 	iptables -D FORWARD -o $zt0 -j ACCEPT 2>/dev/null
 	iptables -D FORWARD -i $zt0 -o $zt0 -j ACCEPT 2>/dev/null
