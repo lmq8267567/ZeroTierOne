@@ -249,6 +249,7 @@ port=""
 args=""
 secret="$(cat /etc/storage/zerotier-one/identity.secret)"
 moonid="$(nvram get zerotier_moonid)"
+planet="$(nvram get zerotier_planet)"
 [ ! -e "/etc/storage/zerotier-one/identity.secret" ] && secret="$(nvram get zerotier_secret)"
 if [ ! -d "$config_path" ]; then
   mkdir -p $config_path
@@ -272,6 +273,32 @@ if [ -n "$secret" ]; then
    logger -t "【ZeroTier】" "找到密钥文件，正在启动，请稍候..."
    echo "$secret" >$config_path/identity.secret
    $PROGIDT getpublic $config_path/identity.secret >$config_path/identity.public
+fi
+if [ -n "$secret" ]; then
+   logger -t "【ZeroTier】" "找到密钥文件，正在启动，请稍候..."
+   echo "$secret" >$config_path/identity.secret
+   $PROGIDT getpublic $config_path/identity.secret >$config_path/identity.public
+fi
+if [ -n "$planet"]; then
+		logger -t "【ZeroTier】" "找到planet,正在写入..."
+		echo "$planet" >$config_path/planet.tmp
+		base64 -d $config_path/planet.tmp >$config_path/planet
+fi
+if [ -f "$PLANET" ]; then
+		if [ ! -s "$PLANET" ]; then
+			echo "自定义planet文件为空,删除..."
+			rm -f $config_path/planet
+			rm -f $PLANET
+			nvram set zerotier_planet=""
+			nvram commit
+		else
+			logger -t "【ZeroTier】" "找到自定义planet文件,开始创建..."
+			planet="$(base64 $PLANET)"
+			cp -f $PLANET $config_path/planet
+			rm -f $PLANET
+			nvram set zerotier_planet="$planet"
+			nvram commit
+		fi
 fi
 add_join $(nvram get zerotier_id)
 $PROG $args $config_path >/dev/null 2>&1 &
@@ -309,16 +336,16 @@ rules() {
         ip66=$(ifconfig $zt0  | grep "inet6 addr:" | awk '{print $3}' | awk '{print $1,$2}'| tr -d 'addr' | tr -d ' ')
         [ -n "$ip66" ] && logger -t "【ZeroTier】" ""$zt0"_ipv6:$ip66"
         [ -n "$ip44" ] && logger -t "【ZeroTier】" ""$zt0"_ipv4:$ip44"
-        [ -z "$ip44" ] && [ -z "$ip66" ] && logger -t "【ZeroTier】" "未获取到zerotier ip请前往官网检查是否勾选此路由加入网络并分配IP"
+        [ -z "$ip44" ] && logger -t "【ZeroTier】" "未获取到zerotier ip请前往官网检查是否勾选此路由加入网络并分配IP"
 	del_rules
 	iptables -A INPUT -i $zt0 -j ACCEPT
 	iptables -A FORWARD -i $zt0 -o $zt0 -j ACCEPT
 	iptables -A FORWARD -i $zt0 -j ACCEPT
 	iptables -t nat -A POSTROUTING -o $zt0 -j MASQUERADE
-	while [ "$(ip route | grep "dev $zt0  proto" | awk '{print $1}')" = "" ]; do
+	while [ "$(ip route | grep "dev $zt0  proto kernel" | awk '{print $1}')" = "" ]; do
 	sleep 1
 	done
-	ip_segment=`ip route | grep "dev $zt0  proto" | awk '{print $1}'`
+	ip_segment="$(ip route | grep "dev $zt0  proto kernel" | awk '{print $1}')"
 	iptables -t nat -A POSTROUTING -s $ip_segment -j MASQUERADE
 	logger -t "【ZeroTier】" "启用ZeroTier NAT"
         logger -t "【ZeroTier】" "ZeroTier官网：https://my.zerotier.com/network"
@@ -327,16 +354,16 @@ rules() {
 
 del_rules() {
 	zt0=$(ifconfig | grep zt | awk '{print $1}')
-	ip_segment=`ip route | grep "dev $zt0  proto" | awk '{print $1}'`
+	ip_segment=`ip route | grep "dev $zt0  proto kernel" | awk '{print $1}'`
 	iptables -D FORWARD -i $zt0 -j ACCEPT 2>/dev/null
 	iptables -D FORWARD -o $zt0 -j ACCEPT 2>/dev/null
-	iptables -D FORWARD -i $zt0 -o $zt0 -j ACCEPT
+	iptables -D FORWARD -i $zt0 -o $zt0 -j ACCEPT 2>/dev/null
 	iptables -D INPUT -i $zt0 -j ACCEPT 2>/dev/null
 	iptables -t nat -D POSTROUTING -o $zt0 -j MASQUERADE 2>/dev/null
 	iptables -t nat -D POSTROUTING -s $ip_segment -j MASQUERADE 2>/dev/null
 }
 
-#创建moon节点,下面的192.168.2.1改为你的Moon服务器 IP （请注意为公网IP），不支持动态域名
+#创建moon节点,zerotier不再支持动态域名
 creat_moon(){
 moonip="$(nvram get zerotiermoon_ip)"
 #检查是否合法ip
