@@ -9,7 +9,8 @@ PROGIDT=/etc/storage/zerotier-one/zerotier-idtool
 config_path="/etc/storage/zerotier-one"
 PLANET="/etc/storage/zerotier-one/planet"
 zeroid="$(nvram get zerotier_id)"
-
+D="/etc/storage/cron/crontabs"
+F="$D/`nvram get http_username`"
 zerotier_restart () {
 if [ -z "`pidof zerotier-one`" ] ; then
     logger -t "【ZeroTier】" "重新启动"
@@ -21,7 +22,10 @@ fi
 zerotier_keep  () {
 [ ! -z "`pidof zerotier-one`" ] && logger -t "【ZeroTier】" "启动成功"
 logger -t "【ZeroTier】" "守护进程启动"
-cronset '#ZeroTier守护进程' "*/1 * * * * test -z \"\$(pidof zerotier-one)\" && /etc/storage/zerotier.sh restart #ZeroTier守护进程"
+sed -Ei '/ZeroTier守护进程|^$/d' "$F"
+cat >> "$F" <<-OSC
+*/1 * * * * test -z "\`pidof zerotier-one\`"  && /etc/storage/zerotier.sh restart #ZeroTier守护进程
+OSC
 zero_ping &
 }
 
@@ -66,7 +70,7 @@ sleep 20
 
 zerotier_close () {
 del_rules
-cronset "ZeroTier守护进程"
+sed -Ei '/ZeroTier守护进程|^$/d' "$F"
 killall zerotier-one
 killall -9 zerotier-one
 [ -d /tmp/zerotier-one ] && rm -rf /tmp/zerotier-one
@@ -323,26 +327,6 @@ if [ ! -n "$zmoonid"]; then
   nvram set zerotiermoon_id=""
 fi
 } 
-
-cronset(){
-	tmpcron=/tmp/cron_$USER
-	croncmd -l > $tmpcron 
-	sed -i "/$1/d" $tmpcron
-	sed -i '/^$/d' $tmpcron
-	echo "$2" >> $tmpcron
-	croncmd $tmpcron
-	rm -f $tmpcron
-}
-croncmd(){
-	if [ -n "$(crontab -h 2>&1 | grep '\-l')" ];then
-		crontab $1
-	else
-		crondir="$(crond -h 2>&1 | grep -oE 'Default:.*' | awk -F ":" '{print $2}')"
-		[ ! -w "$crondir" ] && crondir="/etc/storage/cron/crontabs"
-		[ "$1" = "-l" ] && cat $crondir/$USER 2>/dev/null
-		[ -f "$1" ] && cat $1 > $crondir/$USER
-	fi
-}
 
 zero_dl(){
    sleep 2
