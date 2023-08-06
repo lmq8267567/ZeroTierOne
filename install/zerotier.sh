@@ -60,11 +60,11 @@ sleep 20
 [ -n "$ip33" ] && ping_loss3=`echo $ping_zero3 | awk -F ', ' '{print $3}' | awk '{print $1}'`
 [ -n "$ip44" ] && ping_loss4=`echo $ping_zero4 | awk -F ', ' '{print $3}' | awk '{print $1}'`
 [ -n "$ip55" ] && ping_loss5=`echo $ping_zero5 | awk -F ', ' '{print $3}' | awk '{print $1}'`
-[ ! -z "$ping_time1" ] && logger -t "【ZeroTier】" "节点 "$ip11".1，延迟:$ping_time1 ms 丢包率：$ping_loss1 "
-[ ! -z "$ping_time2" ] && logger -t "【ZeroTier】" "节点 "$ip22".1，延迟:$ping_time2 ms 丢包率：$ping_loss2 "
-[ ! -z "$ping_time3" ] && logger -t "【ZeroTier】" "节点 "$ip33".1，延迟:$ping_time3 ms 丢包率：$ping_loss3 "
-[ ! -z "$ping_time4" ] && logger -t "【ZeroTier】" "节点 "$ip44".1，延迟:$ping_time4 ms 丢包率：$ping_loss4 "
-[ ! -z "$ping_time5" ] && logger -t "【ZeroTier】" "节点 "$ip55".1，延迟:$ping_time5 ms 丢包率：$ping_loss5 "
+[ ! -z "$ping_time1" ] && logger -t "【ZeroTier】" "已连通"$ip11".1，延迟:$ping_time1 ms 丢包率：$ping_loss1 "
+[ ! -z "$ping_time2" ] && logger -t "【ZeroTier】" "已连通"$ip22".1，延迟:$ping_time2 ms 丢包率：$ping_loss2 "
+[ ! -z "$ping_time3" ] && logger -t "【ZeroTier】" "已连通"$ip33".1，延迟:$ping_time3 ms 丢包率：$ping_loss3 "
+[ ! -z "$ping_time4" ] && logger -t "【ZeroTier】" "已连通"$ip44".1，延迟:$ping_time4 ms 丢包率：$ping_loss4 "
+[ ! -z "$ping_time5" ] && logger -t "【ZeroTier】" "已连通"$ip55".1，延迟:$ping_time5 ms 丢包率：$ping_loss5 "
 
 }
 
@@ -79,6 +79,7 @@ killall -9 zerotier-one
 
 zerotier_start()  {
 killall -9 zerotier-one
+sed -Ei '/ZeroTier守护进程|^$/d' "$F"
 SVC_PATH="/etc/storage/zerotier-one/zerotier-one"
 [ ! -f "$SVC_PATH" ] && SVC_PATH="/tmp/zerotier-one/zerotier-one" && [ ! -d /tmp/zerotier-one ] && mkdir -p /tmp/zerotier-one
 zerosize=$(df -m | grep "% /etc" | awk 'NR==1' | awk -F' ' '{print $4}'| tr -d 'M' | tr -d '')
@@ -167,7 +168,7 @@ args=""
 secret="$(cat /etc/storage/zerotier-one/identity.secret)"
 moonid="$(nvram get zerotier_moonid)"
 planet="$(nvram get zerotier_planet)"
-[ ! -e "/etc/storage/zerotier-one/identity.secret" ] && secret="$(nvram get zerotier_secret)"
+[ ! -s "/etc/storage/zerotier-one/identity.secret" ] && secret="$(nvram get zerotier_secret)"
 if [ ! -d "$config_path" ]; then
   mkdir -p $config_path
 fi
@@ -185,6 +186,11 @@ if [ -z "$secret" ]; then
    secret="$(cat $sf)"
    nvram set zerotier_secret="$secret"
    nvram commit
+fi
+if [ -n "$secret" ]; then
+   logger -t "【ZeroTier】" "找到密钥文件，正在启动，请稍候..."
+   echo "$secret" >$config_path/identity.secret
+   $PROGIDT getpublic $config_path/identity.secret >$config_path/identity.public
 fi
 if [ -n "$secret" ]; then
    logger -t "【ZeroTier】" "找到密钥文件，正在启动，请稍候..."
@@ -245,12 +251,12 @@ rules() {
         ip66=$(ifconfig $zt0  | grep "inet6 addr:" | awk '{print $3}' | awk '{print $1,$2}'| tr -d 'addr' | tr -d ' ')
         [ -n "$ip66" ] && logger -t "【ZeroTier】" ""$zt0"_ipv6:$ip66"
         [ -n "$ip44" ] && logger -t "【ZeroTier】" ""$zt0"_ipv4:$ip44"
-        [ -z "$ip44" ] && [ -z "$ip66" ] && logger -t "【ZeroTier】" "未获取到zerotier ip请前往官网检查是否勾选此路由加入网络并分配IP"
+        [ -z "$ip44" ] && logger -t "【ZeroTier】" "未获取到zerotier ip请前往官网检查是否勾选此路由加入网络并分配IP"
 	del_rules
-	iptables -A INPUT -i $zt0 -j ACCEPT
-	iptables -A FORWARD -i $zt0 -o $zt0 -j ACCEPT
-	iptables -A FORWARD -i $zt0 -j ACCEPT
-	iptables -t nat -A POSTROUTING -o $zt0 -j MASQUERADE
+	iptables -I INPUT -i $zt0 -j ACCEPT
+	iptables -I FORWARD -i $zt0 -o $zt0 -j ACCEPT
+	iptables -I FORWARD -i $zt0 -j ACCEPT
+	iptables -t nat -I POSTROUTING -o $zt0 -j MASQUERADE
 	while [ "$(ip route | grep "dev $zt0  proto kernel" | awk '{print $1}')" = "" ]; do
 	sleep 1
 	done
@@ -258,10 +264,11 @@ rules() {
 	iptables -t nat -A POSTROUTING -s $ip_segment -j MASQUERADE
 	logger -t "【ZeroTier】" "启用ZeroTier NAT"
         logger -t "【ZeroTier】" "ZeroTier官网：https://my.zerotier.com/network"
-        ####访问上级路由其他设备添加路由规则命令##
+	####访问上级路由其他设备添加路由规则命令##
 	#ip route add $zero_ip via $zero_route dev $zt0
 	#其中$zero_ip改为zerotier官网分配的ip   $zero_route改为你想要访问的上级路由网段如 192.168.30.0/24     $zt0改为你的zerotier网卡名 如ztoj56Rop2
 	#删除命令ip route del $zero_ip via $zero_route dev $zt0
+        
 }
 
 del_rules() {
@@ -275,7 +282,7 @@ del_rules() {
 	iptables -t nat -D POSTROUTING -s $ip_segment -j MASQUERADE 2>/dev/null
 }
 
-#创建moon节点 zerotier不再支持动态域名
+#创建moon节点,zerotier不再支持动态域名
 creat_moon(){
 moonip="$(nvram get zerotiermoon_ip)"
 #检查是否合法ip
@@ -335,6 +342,7 @@ zero_dl(){
 
 zerotier_up(){
     logger -t "【ZeroTier】" "网络中断，重新启动"
+    zerotier_start
    zerotier_start
 }
 
@@ -357,7 +365,7 @@ up)
 	zerotier_up
 	;;
 restart)
-        zerotier_close
+	zerotier_close
 	zerotier_start
 	;;
 
