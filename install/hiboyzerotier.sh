@@ -143,13 +143,12 @@ kill_ps "$scriptname"
 }
 
 zerotier_start()  {
-check_webui_yes
 killall -9 zerotier-one
 SVC_PATH="/opt/bin/zerotier-one"
 SVC_PATH2="/opt/app/zerotier/zerotier.tar.gz"
 [ ! -d "/opt/app/zerotier" ] && mkdir -p /opt/app/zerotier
 [ ! -s "$SVC_PATH2" ] && [ -s "/etc/storage/zerotier-one/zerotier.tar.gz" ] && cp -rf /etc/storage/zerotier-one/zerotier.tar.gz /opt/app/zerotier/zerotier.tar.gz
-zerosize=`check_disk_size /etc/storage`
+zerosize=$(df -m | grep "% /etc" | awk 'NR==1' | awk -F' ' '{print $4}'| tr -d 'M' | tr -d '')
 curltest=`which curl`
 if [ -z "$curltest" ] || [ ! -s "`which curl`" ] ; then
    tag="$( wget -T 5 -t 3 --user-agent "$user_agent" --max-redirect=0 --output-document=-  https://api.github.com/repos/lmq8267/ZeroTierOne/releases/latest  2>&1 | grep 'tag_name' | cut -d\" -f4 )"
@@ -173,7 +172,7 @@ if [ ! -s "$SVC_PATH" ] ; then
            if [ "$zerosize" -lt 2 ];then
                logger -t "【ZeroTier】" "您的设备/etc/storage空间剩余"$zerosize"M，不足2M，将下载安装包到内存安装"
                [ "$zerosize" -gt 1 ] && logger -t "【ZeroTier】" "可尝试手动上传zerotier.tar.gz和MD5.txt到内部存储/etc/storage/zerotier-one/目录里"
-               wgetcurl.sh "SVC_PATH2" "https://github.com/lmq8267/ZeroTierOne/releases/download/$tag/zerotier.tar.gz" "https://fastly.jsdelivr.net/gh/lmq8267/zerotier@master/install/$tag/zerotier.tar.gz"
+               wgetcurl.sh "$SVC_PATH2" "https://github.com/lmq8267/ZeroTierOne/releases/download/$tag/zerotier.tar.gz" "https://fastly.jsdelivr.net/gh/lmq8267/zerotier@master/install/$tag/zerotier.tar.gz"
                else
                 logger -t "【ZeroTier】" "您的设备/etc/storage空间充足:"$zerosize"M，将下载安装包到内部存储"
                 wgetcurl.sh "/etc/storage/zerotier-one/zerotier.tar.gz" "https://github.com/lmq8267/ZeroTierOne/releases/download/$tag/zerotier.tar.gz" "https://fastly.jsdelivr.net/gh/lmq8267/zerotier@master/install/$tag/zerotier.tar.gz"
@@ -186,7 +185,7 @@ if [ ! -s "$SVC_PATH" ] ; then
               if [ "$zerosize" -lt 2 ];then
                logger -t "【ZeroTier】" "您的设备/etc/storage空间剩余"$zerosize"M，不足2M，将下载安装包到内存安装"
                [ "$zerosize" -gt 1 ] && logger -t "【ZeroTier】" "可尝试手动上传zerotier.tar.gz和MD5.txt到内部存储/etc/storage/zerotier-one/目录里"
-               wgetcurl.sh "SVC_PATH2" "https://github.com/lmq8267/ZeroTierOne/releases/download/1.10.6/zerotier.tar.gz" "https://fastly.jsdelivr.net/gh/lmq8267/zerotier@master/install/1.10.6/zerotier.tar.gz"
+               wgetcurl.sh "$SVC_PATH2" "https://github.com/lmq8267/ZeroTierOne/releases/download/1.10.6/zerotier.tar.gz" "https://fastly.jsdelivr.net/gh/lmq8267/zerotier@master/install/1.10.6/zerotier.tar.gz"
                else
                 logger -t "【ZeroTier】" "您的设备/etc/storage空间充足:"$zerosize"M，将下载安装包到内部存储"
                 wgetcurl.sh "/etc/storage/zerotier-one/zerotier.tar.gz" "https://github.com/lmq8267/ZeroTierOne/releases/download/1.10.6/zerotier.tar.gz" "https://fastly.jsdelivr.net/gh/lmq8267/zerotier@master/install/1.10.6/zerotier.tar.gz"
@@ -214,10 +213,12 @@ if [ ! -s "$SVC_PATH" ] ; then
         fi
      fi
 fi
-[ ! -s "$PROGCLI" ] && ln -sf "$PROG" "$PROGCLI"
-[ ! -s "$PROGIDT" ] && ln -sf "$PROG" "$PROGIDT"
-      chmod 777 "$PROG" "$PROGCLI" "$PROGIDT"
- if [ -s "$SVC_PATH" ] ; then
+chmod 777 "$PROG"
+[ -f "$PROGCLI" ] && ln -sf "$PROG" "$PROGCLI"
+[ -f "$PROGIDT" ] && ln -sf "$PROG" "$PROGIDT"
+chmod 777 "$PROGIDT"
+chmod 777 "$PROGCLI"
+ if [ -s "$SVC_PATH" ] && [ -f "$PROGCLI" ] && [ -f "$PROGIDT" ] ; then
        zerotier_v=$($SVC_PATH -version | sed -n '1p')
        echo "$tag"
        echo "$zerotier_v"
@@ -238,7 +239,9 @@ fi
 	      fi
            fi
        fi
-  fi
+else
+logger -t "【ZeroTier】" " 程序不完整，删除，重新下载" && rm -rf "$SVC_PATH2" "/etc/storage/zerotier-one/zerotier.tar.gz" "/tmp/zerotier.tar.gz" "/tmp/var/zerotier-one" "$PROG" "$PROGCLI" "$PROGIDT" && zero_dl
+ fi
 start_instance 'zerotier'
 }
     
