@@ -1,4 +1,4 @@
-name: Build and Release
+name: test
 
 on:
   schedule:
@@ -70,7 +70,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.c8 }}
-          tag_name: ${{ needs.check.outputs.ver }}
+          tag_name: test
           files: |
               /opt/zerotier.tar.gz
               /opt/zerotier/zerotier-one
