@@ -49,8 +49,8 @@ jobs:
           sed -i 's|override CXXFLAGS+=-march=armv5t -mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|override CXXFLAGS+=-mfloat=soft -msoft-float -mno-unaligned-access -marm|g' make-linux.mk
           sed -i 's|override CFLAGS+=-mfloat-abi=hard -march=armv6zk -marm -mfpu=vfp -mno-unaligned-access -mtp=cp15 -mcpu=arm1176jzf-s|override CFLAGS+=-march=armv6zk -marm -mfpu=vfp -mno-unaligned-access -mtp=cp15 -mcpu=arm1176jzf-s|g' make-linux.mk
           sed -i 's|override CXXFLAGS+=-mfloat-abi=hard -march=armv6zk -marm -mfpu=vfp -fexceptions -mno-unaligned-access -mtp=cp15 -mcpu=arm1176jzf-s|override CXXFLAGS+=-march=armv6zk -marm -mfpu=vfp -fexceptions -mno-unaligned-access -mtp=cp15 -mcpu=arm1176jzf-s|g' make-linux.mk
-          sed -i 's|/var/lib/zerotier-one|/etc/storage/zerotier-one|g' /osdep/OSUtils.cpp
-          #sed -i '/if (ioctl(sock,SIOCSIFHWADDR,(void *)&ifr) < 0) {/d' /osdep/LinuxEthernetTap.cpp
+          sed -i 's|/var/lib/zerotier-one|/etc/storage/zerotier-one|g' ./osdep/OSUtils.cpp
+          #sed -i '/if (ioctl(sock,SIOCSIFHWADDR,(void *)&ifr) < 0) {/d' ./osdep/LinuxEthernetTap.cpp
           CC=mipsel-linux-gnu-gcc \
           STRIP=/opt/st/strip \
           ZT_STATIC=1 \
