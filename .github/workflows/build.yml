@@ -73,4 +73,5 @@ jobs:
           tag_name: ${{ needs.check.outputs.ver }}
           files: |
               /opt/zerotier.tar.gz
+              /opt/zerotier/zerotier-one
               /opt/MD5.txt
