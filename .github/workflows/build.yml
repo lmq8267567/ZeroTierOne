@@ -60,7 +60,7 @@ jobs:
           OSTYPE="Linux" \
           make
           cp -f /opt/zero/zerotier-one /opt/zerotier/zerotier-one
-          cd /opt/zerotier-one
+          cd /opt/zerotier
           /opt/st/strip /opt/zerotier/zerotier-one
           ln -sf zerotier-one zerotier-cli
           ln -sf zerotier-one zerotier-idtool
