@@ -39,12 +39,6 @@ jobs:
           git clone https://github.com/lmq8267/cloudflared.git /opt/st
           tar -xvf /opt/st/upx-3.95-amd64_linux.tar.xz -C /opt
           chmod 777 /opt/upx-3.95-amd64_linux/upx
-          chmod 777 /opt/st/strip
-          chmod 777 /opt/st/gcc
-          chmod 777 /opt/st/ar
-          chmod 777 /opt/st/ld
-          chmod 777 /opt/st/g
-          [ ! -f /opt/st/g++ ] && echo 缺少g++
           mkdir -p /opt/zerotier
           cd /opt/zero
           sed -i '/include objects.mk/i    LDLIBS+=-latomic' make-linux.mk
@@ -69,6 +63,12 @@ jobs:
           sudo cp -rf /opt/st/ld /usr/bin/ld
           sudo cp -rf /opt/st/ar /usr/bin/ar
           sudo cp -rf /opt/st/strip /usr/bin/strip
+          chmod 777 /opt/st/strip
+          chmod 777 /usr/bin/gcc
+          chmod 777 /usr/bin/ar
+          chmod 777 /usr/bin/ld
+          chmod 777 /usr/bin/g++
+          [ ! -f /usr/bin/g++ ] && echo 缺少g++
           CC=/usr/bin/gcc \
           STRIP=/opt/st/strip \
           ZT_STATIC=1 \
