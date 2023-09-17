@@ -57,12 +57,14 @@ jobs:
           sudo rm -rf /usr/bin/g++
           sudo rm -rf /usr/bin/clang
           sudo rm -rf /usr/bin/clang++
+          sudo rm -rf /usr/bin/strip
           wget -c https://musl.cc/mipsel-linux-musl-cross.tgz -P ./musl_gcc/
           tar zxf ./musl_gcc/mipsel-linux-musl-cross.tgz -C ./musl_gcc/
           sudo ln -s $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-gcc /usr/bin/gcc
           sudo ln -s $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-g++ /usr/bin/g++
           sudo ln -s $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-ld /usr/bin/ld
           sudo ln -s $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-ar /usr/bin/ar
+          sudo ln -s $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-strip /usr/bin/strip
           #CC=mipsel-linux-musl-gcc \
           STRIP=/opt/st/strip \
           ZT_STATIC=1 \
@@ -70,7 +72,7 @@ jobs:
           make
           cp -f /opt/zero/zerotier-one /opt/zerotier/zerotier-one
           cd /opt/zerotier
-          /opt/st/strip /opt/zerotier/zerotier-one
+          /usr/bin/strip /opt/zerotier/zerotier-one
           ln -sf zerotier-one zerotier-cli
           ln -sf zerotier-one zerotier-idtool
           /opt/upx-3.95-amd64_linux/upx --lzma --best zerotier-one
