@@ -53,6 +53,8 @@ jobs:
           mkdir -p ./musl_gcc 
           wget -c https://musl.cc/mipsel-linux-musl-cross.tgz -P ./musl_gcc/
           tar zxf ./musl_gcc/mipsel-linux-musl-cross.tgz -C ./musl_gcc/
+          sudo rm -rf /usr/bin/clang
+          sudo rm -rf /usr/bin/clang++
           sudo cp -rf $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-gcc /usr/bin/gcc
           sudo cp -rf $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-g++ /usr/bin/g++
           sudo cp -rf $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-ld /usr/bin/ld
