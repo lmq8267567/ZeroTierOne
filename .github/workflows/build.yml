@@ -63,11 +63,11 @@ jobs:
           sudo cp -rf /opt/st/ld /usr/bin/ld
           sudo cp -rf /opt/st/ar /usr/bin/ar
           sudo cp -rf /opt/st/strip /usr/bin/strip
-          chmod 777 /opt/st/strip
-          chmod 777 /usr/bin/gcc
-          chmod 777 /usr/bin/ar
-          chmod 777 /usr/bin/ld
-          chmod 777 /usr/bin/g++
+          sudo chmod 777 /opt/st/strip
+          sudo chmod 777 /usr/bin/gcc
+          sudo chmod 777 /usr/bin/ar
+          sudo chmod 777 /usr/bin/ld
+          sudo chmod 777 /usr/bin/g++
           [ ! -f /usr/bin/g++ ] && echo 缺少g++
           CC=/usr/bin/gcc \
           STRIP=/opt/st/strip \
