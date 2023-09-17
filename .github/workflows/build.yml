@@ -64,7 +64,7 @@ jobs:
           sudo ln -s $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-g++ /usr/bin/g++
           sudo ln -s $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-ld /usr/bin/ld
           sudo ln -s $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-ar /usr/bin/ar
-          CC=mipsel-linux-musl-gcc \
+          #CC=mipsel-linux-musl-gcc \
           STRIP=/opt/st/strip \
           ZT_STATIC=1 \
           CFLAGS=" -static " \
