@@ -44,10 +44,6 @@ jobs:
           mkdir -p /opt/zerotier
           cd /opt/zero
           #sed -i '/include objects.mk/i    LDLIBS+=-latomic' make-linux.mk
-          sed -i 's|CC:=$(shell if [ -e /usr/bin/clang ]; then echo clang; else echo gcc; fi)|CC:=mipsel-linux-gnu-gcc|g' make-linux.mk
-          sed -i 's|CC:=$(shell if [ -e /opt/rh/devtoolset-8/root/usr/bin/gcc ]; then echo /opt/rh/devtoolset-8/root/usr/bin/gcc; else echo $(CC); fi)|CC:=mipsel-linux-gnu-gcc|g' make-linux.mk
-          sed -i 's|CC:=$(shell if [ -e /usr/bin/clang++ ]; then echo clang++; else echo g++; fi)|CC:=mipsel-linux-gnu-g++|g' make-linux.mk
-          sed -i 's|CC:=$(shell if [ -e /opt/rh/devtoolset-8/root/usr/bin/g++ ]; then echo /opt/rh/devtoolset-8/root/usr/bin/g++; else echo $(CXX); fi)|CC:=mipsel-linux-gnu-g++|g' make-linux.mk
           sed -i 's|LDFLAGS=-pie -Wl,-z,relro,-z,now|LDFLAGS=-Wl,-z,relro,-z,now|g' make-linux.mk
           sed -i 's|override CFLAGS+=-march=armv5t -mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|override CFLAGS+=-mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|g' make-linux.mk
           sed -i 's|override CXXFLAGS+=-march=armv5t -mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|override CXXFLAGS+=-mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|g' make-linux.mk
@@ -55,9 +51,11 @@ jobs:
           sed -i 's|override CXXFLAGS+=-mfloat-abi=hard -march=armv6zk -marm -mfpu=vfp -fexceptions -mno-unaligned-access -mtp=cp15 -mcpu=arm1176jzf-s|override CXXFLAGS+=-mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|g' make-linux.mk
           sed -i 's|/var/lib/zerotier-one|/etc/storage/zerotier-one|g' ./osdep/OSUtils.cpp
           #sed -i '/if (ioctl(sock,SIOCSIFHWADDR,(void *)&ifr) < 0) {/d' ./osdep/LinuxEthernetTap.cpp
-          #export CC=mipsel-linux-gnu-gcc
-          #export CFLAGS=" -static "
-          CC=mipsel-linux-gnu-gcc \
+          mkdir -p ./musl_gcc 
+          wget -c https://musl.cc/mipsel-linux-musl-cross.tgz -P ./musl_gcc/
+          tar zxf ./musl_gcc/mipsel-linux-musl-cross.tgz -C ./musl_gcc/
+          sudo ln -s $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/*gcc /usr/bin/
+          CC=mipsel-linux-musl-gcc \
           STRIP=/opt/st/strip \
           ZT_STATIC=1 \
           CFLAGS=" -static " \
