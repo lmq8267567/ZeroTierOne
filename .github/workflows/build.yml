@@ -51,8 +51,8 @@ jobs:
           sed -i 's|override CXXFLAGS+=-mfloat-abi=hard -march=armv6zk -marm -mfpu=vfp -fexceptions -mno-unaligned-access -mtp=cp15 -mcpu=arm1176jzf-s|override CXXFLAGS+=-mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|g' make-linux.mk
           sed -i 's|/var/lib/zerotier-one|/etc/storage/zerotier-one|g' ./osdep/OSUtils.cpp
           #sed -i '/if (ioctl(sock,SIOCSIFHWADDR,(void *)&ifr) < 0) {/d' ./osdep/LinuxEthernetTap.cpp
-          export CC=mipsel-linux-gnu-gcc
-          export CFLAGS=" -static "
+          #export CC=mipsel-linux-gnu-gcc
+          #export CFLAGS=" -static "
           CC=mipsel-linux-gnu-gcc \
           STRIP=/opt/st/strip \
           ZT_STATIC=1 \
