@@ -44,6 +44,7 @@ jobs:
           mkdir -p /opt/zerotier
           cd /opt/zero
           #sed -i '/include objects.mk/i    LDLIBS+=-latomic' make-linux.mk
+          sed -i 's|/usr/include/miniupnpc/miniupnpc.h|/opt/zero/ext/miniupnpc/miniupnpc.h|g' make-linux.mk
           sed -i 's|LDFLAGS=-pie -Wl,-z,relro,-z,now|LDFLAGS=-Wl,-z,relro,-z,now|g' make-linux.mk
           sed -i 's|override CFLAGS+=-march=armv5t -mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|override CFLAGS+=-mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|g' make-linux.mk
           sed -i 's|override CXXFLAGS+=-march=armv5t -mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|override CXXFLAGS+=-mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|g' make-linux.mk
