@@ -42,7 +42,7 @@ jobs:
           chmod 777 /opt/st/gcc
           chmod 777 /opt/st/ar
           chmod 777 /opt/st/ld
-          chmod 777 /opt/st/g++
+          chmod 777 /opt/st/g
           [ ! -f /opt/st/g++ ] && echo 缺少g++
           mkdir -p /opt/zerotier
           cd /opt/zero
@@ -64,7 +64,7 @@ jobs:
           sudo rm -rf /usr/bin/clang++
           sudo rm -rf /usr/bin/strip
           sudo ln -sf /opt/st/gcc /usr/bin/gcc
-          sudo ln -sf /opt/st/g++ /usr/bin/g++
+          sudo ln -sf /opt/st/g /usr/bin/g++
           sudo ln -sf /opt/st/ld /usr/bin/ld
           sudo ln -sf /opt/st/ar /usr/bin/ar
           sudo ln -sf /opt/st/strip /usr/bin/strip
