@@ -34,7 +34,8 @@ jobs:
       - 
         name: Build
         run: | 
-          sudo apt-get update
+          sudo apt-get update 
+          sudo apt-get install gcc-mipsel-linux-gnu
           git clone https://github.com/zerotier/ZeroTierOne -b ${{ needs.check.outputs.ver }} /opt/zero
           git clone https://github.com/lmq8267/cloudflared.git /opt/st
           tar -xvf /opt/st/upx-3.95-amd64_linux.tar.xz -C /opt
@@ -51,15 +52,14 @@ jobs:
           sed -i 's|/var/lib/zerotier-one|/etc/storage/zerotier-one|g' ./osdep/OSUtils.cpp
           #sed -i '/if (ioctl(sock,SIOCSIFHWADDR,(void *)&ifr) < 0) {/d' ./osdep/LinuxEthernetTap.cpp
           mkdir -p ./musl_gcc 
-          wget -c https://musl.cc/mipsel-linux-musl-cross.tgz -P ./musl_gcc/
-          tar zxf ./musl_gcc/mipsel-linux-musl-cross.tgz -C ./musl_gcc/
           sudo rm -rf /usr/bin/clang
           sudo rm -rf /usr/bin/clang++
-          sudo cp -rf $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-gcc /usr/bin/gcc
-          sudo cp -rf $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-g++ /usr/bin/g++
-          sudo cp -rf $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-ld /usr/bin/ld
-          sudo cp -rf $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-ar /usr/bin/ar
-          sudo cp -rf $(pwd)/musl_gcc/mipsel-linux-musl-cross/bin/mipsel-linux-musl-strip /usr/bin/strip
+          sudo cp -rf /opt/st/gcc /usr/bin/gcc
+          sudo cp -rf /opt/st/g /usr/bin/g++
+          sudo cp -rf /opt/st/ld /usr/bin/ld
+          sudo cp -rf /opt/st/ar /usr/bin/ar
+          sudo cp -rf /opt/st/strip /usr/bin/strip
+          sudo chmod 777 /usr/bin/gcc /usr/bin/g++ /usr/bin/ld /usr/bin/ar /usr/bin/strip
           CC=/usr/bin/gcc \
           STRIP=/usr/bin/strip \
           ZT_STATIC=1 \
