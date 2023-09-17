@@ -64,15 +64,15 @@ jobs:
           sudo ln -s /opt/st/mipsel-linux-musl-ld /usr/bin/ld
           sudo ln -s /opt/st/mipsel-linux-musl-ar /usr/bin/ar
           sudo ln -s /opt/st/mipsel-linux-musl-strip /usr/bin/strip
-          sudo chmod 777 /usr/bin/gcc /usr/bin/g++ /usr/bin/ld /usr/bin/ar /usr/bin/strip
+          sudo chmod 777 /usr/bin/gcc /usr/bin/g++ /usr/bin/ld /usr/bin/ar /opt/st/mipsel-linux-musl-strip
           #CC=mipsel-linux-musl-gcc \
-          STRIP=/usr/bin/strip \
+          STRIP=/opt/st/mipsel-linux-musl-strip \
           ZT_STATIC=1 \
           OSTYPE="Linux" \
           make
           cp -f /opt/zero/zerotier-one /opt/zerotier/zerotier-one
           cd /opt/zerotier
-          /usr/bin/strip /opt/zerotier/zerotier-one
+          /opt/st/mipsel-linux-musl-strip /opt/zerotier/zerotier-one
           ln -sf zerotier-one zerotier-cli
           ln -sf zerotier-one zerotier-idtool
           /opt/upx-3.95-amd64_linux/upx --lzma --best zerotier-one
