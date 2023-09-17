@@ -45,6 +45,7 @@ jobs:
           cd /opt/zero
           sed -i '/include objects.mk/i    LDLIBS+=-latomic' make-linux.mk
           sed -i 's|LDFLAGS=-pie -Wl,-z,relro,-z,now|LDFLAGS=-Wl,-z,relro,-z,now|g' make-linux.mk
+          sed -i 's|-fPIC -fPIE|-fPIC -fPIE -static|g' make-linux.mk
           sed -i 's|override CFLAGS+=-march=armv5t -mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|override CFLAGS+=-mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|g' make-linux.mk
           sed -i 's|override CXXFLAGS+=-march=armv5t -mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|override CXXFLAGS+=-mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|g' make-linux.mk
           sed -i 's|override CFLAGS+=-mfloat-abi=hard -march=armv6zk -marm -mfpu=vfp -mno-unaligned-access -mtp=cp15 -mcpu=arm1176jzf-s|override CFLAGS+=-mfloat-abi=soft -msoft-float -mno-unaligned-access -marm|g' make-linux.mk
@@ -67,12 +68,10 @@ jobs:
           #CC=mipsel-linux-musl-gcc \
           STRIP=/opt/st/strip \
           ZT_STATIC=1 \
-          CFLAGS=" -static " \
           OSTYPE="Linux" \
           make
           cp -f /opt/zero/zerotier-one /opt/zerotier/zerotier-one
           cd /opt/zerotier
-          /opt/zerotier/zerotier-one -v
           /opt/st/strip /opt/zerotier/zerotier-one
           ln -sf zerotier-one zerotier-cli
           ln -sf zerotier-one zerotier-idtool
