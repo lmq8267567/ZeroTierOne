@@ -34,6 +34,7 @@ jobs:
       - 
         name: Build
         run: | 
+          sudo apt-get update
           git clone https://github.com/zerotier/ZeroTierOne -b ${{ needs.check.outputs.ver }} /opt/zero
           git clone https://github.com/lmq8267/cloudflared.git /opt/st
           tar -xvf /opt/st/upx-3.95-amd64_linux.tar.xz -C /opt
