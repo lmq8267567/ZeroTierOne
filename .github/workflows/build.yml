@@ -56,11 +56,12 @@ jobs:
           CC=mipsel-linux-gnu-gcc \
           STRIP=/opt/st/strip \
           ZT_STATIC=1 \
-          CFLAGS=" -static "
+          CFLAGS=" -static " \
           OSTYPE="Linux" \
           make
           cp -f /opt/zero/zerotier-one /opt/zerotier/zerotier-one
           cd /opt/zerotier
+          /opt/zerotier/zerotier-one -v
           /opt/st/strip /opt/zerotier/zerotier-one
           ln -sf zerotier-one zerotier-cli
           ln -sf zerotier-one zerotier-idtool
