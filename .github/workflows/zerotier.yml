@@ -200,7 +200,7 @@ jobs:
             rm -rf /opt/ipk/opt/bin/zerotier-one /opt/ipk/data.tar.gz
             cp -rf /opt/bin/zerotier-one/zerotier-one /opt/ipk/opt/bin/zerotier-one
             cd /opt/ipk
-            tar czvf /opt/ipk/data.tar.gz /opt/ipk/opt
+            tar czvf data.tar.gz opt
             tar -czf zerotier_${{ needs.check.outputs.ver }}-1_mipsel-3.4.ipk data.tar.gz control.tar.gz debian-binary
          fi
       - 
