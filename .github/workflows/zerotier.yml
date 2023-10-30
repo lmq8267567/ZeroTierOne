@@ -116,7 +116,7 @@ jobs:
           export AR=${{ matrix.GCC }}-ar
           export LD=${{ matrix.GCC }}-ld
           export RANLIB=${{ matrix.GCC }}-ranlib
-          export strip=${{ matrix.GCC }}-strip
+          export STRIP=${{ matrix.GCC }}-strip
           export CFLAGS="-I /opt/musl_gcc/${{ env.MUSL_URI }}/${{ matrix.GCC }}/include -L /opt/musl_gcc/${{ env.MUSL_URI }}/${{ matrix.GCC }}/lib -Wl,--gc-sections -Os -ffunction-sections -fdata-sections -D_GNU_SOURCE -D_BSD_SOURCE -fPIE"
           export CXXFLAGS="$CFLAGS"
           export TARGET_CFLAGS=" -DNDEBUG -DBOOST_NO_FENV_H -DBOOST_DISABLE_ASSERTS"
