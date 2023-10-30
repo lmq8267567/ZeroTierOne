@@ -183,7 +183,7 @@ jobs:
             cp -rf /opt/bin/zerotier-one/MD5.txt /opt/zero/install/${{ needs.check.outputs.ver }}/MD5.txt
             cp -rf /opt/bin/zerotier.tar.gz /opt/zero/install/${{ needs.check.outputs.ver }}/zerotier.tar.gz
             cp -rf /opt/bin/tarMD5.txt /opt/zero/install/${{ needs.check.outputs.ver }}/tarMD5.txt
-            cd /opt/tai
+            cd /opt/zero
             if git status --porcelain | grep .; then
             git add .
             git commit -am "上传时间： $(date '+%Y-%m-%d %H:%M:%S')"
